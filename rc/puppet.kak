@@ -2,7 +2,7 @@
 #
 
 # Detect the filetype
-hook global BufCreate (.*/)?.*.pp %{
+hook global BufCreate .*\.(pp) %{
     set-option buffer filetype puppet
 }
 
@@ -17,7 +17,7 @@ evaluate-commands %sh{
     typedef="class define node inherits"
 
     # keywords
-    keywords="present absent purged latest installed running stopped mounted"
+    keywords="include present absent purged latest installed running stopped mounted"
     keywords="${keywords} unmounted role configured file directory link on_failure"
 
     # control
@@ -74,11 +74,44 @@ evaluate-commands %sh{
 add-highlighter shared/puppet/code/variabledef regex '(^|\W)(\$[a-z][\w_]*)\s*=\s*([^,]+),?' 1:variable 2:value
 add-highlighter shared/puppet/code/variableref regex '(\$(::)?[a-z][\w_]*(::[a-z][\w_]*)*)' 0:value
 add-highlighter shared/puppet/code/attribute regex '\b([a-z][\w_]*)\s*=>\s*([^\s,]*),?\s*' 0:attribute 1:value
+add-highlighter shared/puppet/code/instance regex '((::)?[a-z][\w_]*(::[a-z][\w_]*)*)\b(?:\s+\{|$)' 0:module
 add-highlighter shared/puppet/code/deftype regex '\b(define)\s+([\S]+)\s+[{(]' 1:type 2:module
 add-highlighter shared/puppet/code/classdef regex '\b(class)\s+([\S]+)\s+[{(]' 1:type 2:module
 add-highlighter shared/puppet/code/operators regex (?<=[\w\s\d'"_])(<|<=|=|==|>=|=>|>|=~|!=|!~|\bin\b|\band\b|\bor\b|\?|!|\+|-|/|\*|%|<<|>>|) 0:operator
+
+# Commands
+# ‾‾‾‾‾‾‾‾
+
+define-command -hidden puppet-indent-on-new-line %<
+    evaluate-commands -draft -itersel %<
+        # copy '#' comment prefix and following white spaces
+        try %< execute-keys -draft k <a-x> s ^\h*#\h* <ret> y jgh P >
+        # preserve previous line indent
+        try %< execute-keys -draft \; K <a-&> >
+        # cleanup trailing whitespaces from previous line
+        try %< execute-keys -draft k <a-x> s \h+$ <ret> d >
+        # indent after line ending with :{([
+        try %< execute-keys -draft k <a-x> <a-k> [:{(\[]$ <ret> j <a-gt> >
+    >
+>
+
+define-command -hidden puppet-indent-on-closing-matching %~
+    # align to opening matching brace when alone on a line
+    try %= execute-keys -draft -itersel <a-h><a-k>^\h*\Q %val{hook_param} \E$<ret> mGi s \A|.\z<ret> 1<a-&> =
+~
+
+# Initialization
+# ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 hook -group puppet-highlight global WinSetOption filetype=puppet %{
     add-highlighter window/puppet ref puppet
     hook -once -always window WinSetOption filetype=.* %{ remove-highlighter window/puppet}
 }
+
+hook global WinSetOption filetype=puppet %~
+    hook window InsertChar \n -group puppet-indent puppet-indent-on-new-line
+    hook window InsertChar [)}\]] -group puppet-indent puppet-indent-on-closing-matching
+    hook window ModeChange insert:.* -group puppet-trim-indent %{ try %{ execute-keys -draft \; <a-x> s ^\h+$ <ret> d } }
+
+    hook -once -always window WinSetOption filetype=.* %{ remove-hooks window puppet-.+ }
+~
