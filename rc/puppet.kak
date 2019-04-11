@@ -8,9 +8,12 @@ hook global BufCreate .*\.(pp) %{
 
 add-highlighter shared/puppet regions
 add-highlighter shared/puppet/code default-region group
-add-highlighter shared/puppet/double_string region '"'   (?<!\\)(\\\\)*"  fill string
 add-highlighter shared/puppet/single_string region "'"   (?<!\\)(\\\\)*'  fill string
 add-highlighter shared/puppet/comment       region '#'   '$'              fill comment
+
+add-highlighter shared/puppet/double_string region '"'   (?<!\\)(\\\\)*"  group
+add-highlighter shared/puppet/double_string/fill fill string
+add-highlighter shared/puppet/double_string/interpolation regex \$\{(::)?[a-z][\w_]*\} 0:variable
 
 evaluate-commands %sh{
     # type definitions
