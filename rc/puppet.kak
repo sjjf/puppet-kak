@@ -13,7 +13,11 @@ add-highlighter shared/puppet/comment       region '#'   '$'              fill c
 
 add-highlighter shared/puppet/double_string region '"'   (?<!\\)(\\\\)*"  group
 add-highlighter shared/puppet/double_string/fill fill string
-add-highlighter shared/puppet/double_string/interpolation regex \$\{(::)?[a-z][\w_]*\} 0:variable
+add-highlighter shared/puppet/double_string/interpolation regex \$\{(::)?[a-z][\w_]*\} 0:value
+
+add-highlighter shared/puppet/heredoc_string region -match-capture '@\("?([\h\w_]+)"?(/\w*)?\)' '^\h*(?:\|\h*)?-?\h*([\h\w_]+)$' group
+add-highlighter shared/puppet/heredoc_string/fill fill string
+add-highlighter shared/puppet/heredoc_string/interpolation regex \$\{(::)?[a-z][\w_]*\} 0:value
 
 evaluate-commands %sh{
     # type definitions
@@ -30,7 +34,7 @@ evaluate-commands %sh{
     functions="alert create_resources crit debug emerg err fail include info notice realize"
     functions="${functions} require search tag warning defined file fqdn_rand "
     functions="${functions} generate inline_template regsubst sha1 shellquote"
-    functions="${functions} split sprintf tagged template versioncmp"
+    functions="${functions} split sprintf tagged template versioncmp lookup hiera"
 
     # types
     types="Any Array Boolean Callable Catalogentry Collection Data Default Enum"
@@ -76,8 +80,8 @@ evaluate-commands %sh{
 
 add-highlighter shared/puppet/code/variabledef regex '(^|\W)(\$[a-z][\w_]*)\s*=\s*([^,]+),?' 1:variable 2:value
 add-highlighter shared/puppet/code/variableref regex '(\$(::)?[a-z][\w_]*(::[a-z][\w_]*)*)' 0:value
-add-highlighter shared/puppet/code/attribute regex '\b([a-z][\w_]*)\s*=>\s*([^\s,]*),?\s*' 0:attribute 1:value
-add-highlighter shared/puppet/code/instance regex '((::)?[a-z][\w_]*(::[a-z][\w_]*)*)\b(?:\s+\{|$)' 0:module
+add-highlighter shared/puppet/code/attribute regex '\b([a-z][\w_]*)\s*=>\s*' 0:attribute
+add-highlighter shared/puppet/code/instance regex '(((::)?[a-z][\w_]*(::[a-z][\w_]*)*)\b(?:\s+))\{|$' 1:module
 add-highlighter shared/puppet/code/deftype regex '\b(define)\s+([\S]+)\s+[{(]' 1:type 2:module
 add-highlighter shared/puppet/code/classdef regex '\b(class)\s+([\S]+)\s+[{(]' 1:type 2:module
 add-highlighter shared/puppet/code/operators regex (?<=[\w\s\d'"_])(<|<=|=|==|>=|=>|>|=~|!=|!~|\bin\b|\band\b|\bor\b|\?|!|\+|-|/|\*|%|<<|>>|) 0:operator
