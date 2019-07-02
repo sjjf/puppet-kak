@@ -6,6 +6,27 @@ hook global BufCreate .*\.(pp) %{
     set-option buffer filetype puppet
 }
 
+# Initialization
+# ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+hook -group puppet-highlight global WinSetOption filetype=puppet %{
+    add-highlighter window/puppet ref puppet
+    hook -once -always window WinSetOption filetype=.* %{ remove-highlighter window/puppet}
+}
+
+hook global WinSetOption filetype=puppet %~
+    require-module puppet
+
+    hook window InsertChar \n -group puppet-indent puppet-indent-on-new-line
+    hook window InsertChar [)}\]] -group puppet-indent puppet-indent-on-closing-matching
+    hook window ModeChange insert:.* -group puppet-trim-indent %{ try %{ execute-keys -draft \; <a-x> s ^\h+$ <ret> d } }
+
+    hook -once -always window WinSetOption filetype=.* %{ remove-hooks window puppet-.+ }
+~
+
+# delimiter stolen from rc/filetye/java.kak
+provide-module puppet %§
+
 add-highlighter shared/puppet regions
 add-highlighter shared/puppet/code default-region group
 add-highlighter shared/puppet/single_string region "'"   (?<!\\)(\\\\)*'  fill string
@@ -107,18 +128,4 @@ define-command -hidden puppet-indent-on-closing-matching %~
     try %= execute-keys -draft -itersel <a-h><a-k>^\h*\Q %val{hook_param} \E$<ret> mGi s \A|.\z<ret> 1<a-&> =
 ~
 
-# Initialization
-# ‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-
-hook -group puppet-highlight global WinSetOption filetype=puppet %{
-    add-highlighter window/puppet ref puppet
-    hook -once -always window WinSetOption filetype=.* %{ remove-highlighter window/puppet}
-}
-
-hook global WinSetOption filetype=puppet %~
-    hook window InsertChar \n -group puppet-indent puppet-indent-on-new-line
-    hook window InsertChar [)}\]] -group puppet-indent puppet-indent-on-closing-matching
-    hook window ModeChange insert:.* -group puppet-trim-indent %{ try %{ execute-keys -draft \; <a-x> s ^\h+$ <ret> d } }
-
-    hook -once -always window WinSetOption filetype=.* %{ remove-hooks window puppet-.+ }
-~
+§
