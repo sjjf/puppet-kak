@@ -128,4 +128,32 @@ define-command -hidden puppet-indent-on-closing-matching %~
     try %= execute-keys -draft -itersel <a-h><a-k>^\h*\Q %val{hook_param} \E$<ret> mGi s \A|.\z<ret> 1<a-&> =
 ~
 
+define-command hiera-grep -params 0..1 -docstring "Search for a regex in the local repository hiera data" %{
+    # assume that we're in a control repository layout, and search under data/
+    #
+    # we also have the option of looking at other locations - we can even look
+    # for hiera.yaml and parse it for the exact location to search, but as a
+    # starting point we just look under data/
+    #
+    # since the default grep implementation doesn't give any option for us to
+    # reuse, we're cutting and pasting here
+    evaluate-commands %sh{
+        dpath='data'
+        output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-grep.XXXXXXXX)/fifo
+        mkfifo ${output}
+        if [ $# -gt 0 ]; then
+            ( ${kak_opt_grepcmd} "$@" ${dpath}| tr -d '\r' > ${output} 2>&1 ) > /dev/null 2>&1 < /dev/null &
+        else
+            ( ${kak_opt_grepcmd} "${kak_selection}" ${dpath}| tr -d '\r' > ${output} 2>&1 ) > /dev/null 2>&1 < /dev/null &
+        fi
+
+        printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+                edit! -fifo ${output} -scroll *grep*
+                set-option buffer filetype grep
+                set-option buffer grep_current_line 0
+                hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
+            }"
+    }
+}
+
 §
