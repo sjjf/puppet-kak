@@ -156,4 +156,33 @@ define-command hiera-grep -params 0..1 -docstring "Search for a regex in the loc
     }
 }
 
+define-command find-module-impl -params 0..1 -docstring "Find and open the file implementing the selected module name" %{
+    # we need to assume that we're dealing with a control repository layout,
+    # with code under site/ and manifests/. We could be really smart and find
+    # the module search path specified in the environment.conf file, but it's
+    # not really worth it.
+    #
+    # so, the implementation here is that we grep for `(class|define) foo::bar`
+    # in those directories, opening the results in a grep buffer.
+    evaluate-commands %sh{
+        if [ $# -eq 0 ]; then
+            set -- ${kak_selection}
+        fi
+
+        paths="site manifests"
+        output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-grep.XXXXXXXX)/fifo
+        mkfifo ${output}
+        for path in $paths; do
+            ( ${kak_opt_grepcmd} "(class|define) $1" ${path}|tr -d '\r' > ${output} 2>&1 & ) >/dev/null 2>&1 < /dev/null
+        done
+
+        printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
+                edit! -fifo ${output} -scroll *module-impl*
+                set-option buffer filetype grep
+                set-option buffer grep_current_line 0
+                hook -always -once buffer BufCloseFifo .* %{ nop %sh{ rm -r $(dirname ${output}) } }
+            }"
+    }
+}
+
 §
