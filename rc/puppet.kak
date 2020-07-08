@@ -138,14 +138,14 @@ define-command hiera-grep -params 0..1 -docstring "Search for a regex in the loc
     # since the default grep implementation doesn't give any option for us to
     # reuse, we're cutting and pasting here
     evaluate-commands %sh{
+        if [ $# -eq 0 ]; then
+            set -- ${kak_selection}
+        fi
+
         dpath='data'
         output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-grep.XXXXXXXX)/fifo
         mkfifo ${output}
-        if [ $# -gt 0 ]; then
-            ( ${kak_opt_grepcmd} "$@" ${dpath}| tr -d '\r' > ${output} 2>&1 ) > /dev/null 2>&1 < /dev/null &
-        else
-            ( ${kak_opt_grepcmd} "${kak_selection}" ${dpath}| tr -d '\r' > ${output} 2>&1 ) > /dev/null 2>&1 < /dev/null &
-        fi
+        ( ${kak_opt_grepcmd} "$@" ${dpath}| tr -d '\r' > ${output} 2>&1 & ) > /dev/null 2>&1 < /dev/null
 
         printf %s\\n "evaluate-commands -try-client '$kak_opt_toolsclient' %{
                 edit! -fifo ${output} -scroll *grep*
