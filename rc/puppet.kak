@@ -46,21 +46,32 @@ evaluate-commands %sh{
 
     # keywords
     keywords="include present absent purged latest installed running stopped mounted"
+    keywords="${keywords} application case consumes define produces site type title name"
     keywords="${keywords} unmounted role configured file directory link on_failure"
 
     # control
-    control="if elsif else case default unless"
+    control="and in or if elsif else case default unless"
 
     # functions
-    functions="alert create_resources crit debug emerg err fail include info notice realize"
-    functions="${functions} require search tag warning defined file fqdn_rand "
-    functions="${functions} generate inline_template regsubst sha1 shellquote"
-    functions="${functions} split sprintf tagged template versioncmp lookup hiera"
+    functions="abs alert all assert_type binary_file break call camelcase capitalize"
+    functions="${functions} ceiling chomp chop compare contain conver_to create_resources"
+    functions="${functions} crit debug defined dig digest downcase each emerg empty epp"
+    functions="${functions} err eyaml_lookup_key fail file filter find_file find_template"
+    functions="${functions} flatten floor fqdn_rand generate get get_var group_by hiera"
+    functions="${functions} hiera_array hiera_hash hiera_include hocon_data import include"
+    functions="${functions} index info inline_epp inline_template join json_data keys"
+    functions="${functions} length lest lookup lstrip map match max md5 min module_directory"
+    functions="${functions} new next notice partition realize reduce regsubst"
+    functions="${functions} require return reverse_each round rstrip scanf sha1 sha256"
+    functions="${functions} shellquote size slice sort split sprintf step strftime strip"
+    functions="${functions} tag tagged template then tree_each unique unwrap upcase values"
+    functions="${functions} versioncmp warning with yaml_data"
 
     # types
-    types="Any Array Boolean Callable Catalogentry Collection Data Default Enum"
-    types="${types} Float Hash Integer Numeric Optional Pattern Regexp Scalar"
-    types="${types} String Struct Tuple Type Undef Variant"
+    types="Any Array Binary Boolean Callable Catalogentry CatalogEntry Class Collection"
+    types="${types} Data Default Deferred Enum"
+    types="${types} Float Hash Integer NotUndef Numeric Optional Pattern Resource"
+    types="${types} Regexp Runtime Scalar String Struct Timespan Tuple Type Undef Variant"
 
     # built-in resources
     resources="augeas computer cron exec file filebucket group host interface"
