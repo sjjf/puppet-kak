@@ -124,13 +124,13 @@ add-highlighter shared/puppet/code/operators regex (?<=[\w\s\d'"_])(<|<=|=|==|>=
 define-command -hidden puppet-indent-on-new-line %<
     evaluate-commands -draft -itersel %<
         # copy '#' comment prefix and following white spaces
-        try %< execute-keys -draft k <a-x> s ^\h*#\h* <ret> y jgh P >
+        try %< execute-keys -draft k x <a-x> s ^\h*#\h* <ret> y jgh P >
         # preserve previous line indent
         try %< execute-keys -draft \; K <a-&> >
         # cleanup trailing whitespaces from previous line
-        try %< execute-keys -draft k <a-x> s \h+$ <ret> d >
+        try %< execute-keys -draft k x <a-x> s \h+$ <ret> d >
         # indent after line ending with :{([
-        try %< execute-keys -draft k <a-x> <a-k> [:{(\[]$ <ret> j <a-gt> >
+        try %< execute-keys -draft k x <a-x> <a-k> [:{(\[]$ <ret> j <a-gt> >
     >
 >
 
