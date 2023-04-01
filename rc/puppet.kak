@@ -52,41 +52,92 @@ evaluate-commands %sh{
     # control
     control="and in or if elsif else case default unless"
 
-    # functions
-    functions="abs alert all assert_type binary_file break call camelcase capitalize"
-    functions="${functions} ceiling chomp chop compare contain conver_to create_resources"
-    functions="${functions} crit debug defined dig digest downcase each emerg empty epp"
-    functions="${functions} err eyaml_lookup_key fail file filter find_file find_template"
-    functions="${functions} flatten floor fqdn_rand generate get get_var group_by hiera"
-    functions="${functions} hiera_array hiera_hash hiera_include hocon_data import include"
-    functions="${functions} index info inline_epp inline_template join json_data keys"
-    functions="${functions} length lest lookup lstrip map match max md5 min module_directory"
-    functions="${functions} new next notice partition realize reduce regsubst"
-    functions="${functions} require return reverse_each round rstrip scanf sha1 sha256"
-    functions="${functions} shellquote size slice sort split sprintf step strftime strip"
-    functions="${functions} tag tagged template then tree_each unique unwrap upcase values"
-    functions="${functions} versioncmp warning with yaml_data"
+    # functions - built-in
+    bi_functions="abs alert all annotate any assert_type binary_file break call camelcase"
+    bi_functions="${bi_functions} capitalize ceiling chomp chop compare contain convert_to"
+    bi_functions="${bi_functions} create_resources crit debug defined dig digest downcase"
+    bi_functions="${bi_functions} each emerg empty epp err eyaml_lookup_key fail file filter"
+    bi_functions="${bi_functions} find_file find_template flatten floor fqdn_rand generate"
+    bi_functions="${bi_functions} get getvar group_by hiera hiera_array hiera_hash hiera_include"
+    bi_functions="${bi_functions} hocon_data import include index info inline_epp inline_template"
+    bi_functions="${bi_functions} join json_data keys length lest lookup lstrip map match max"
+    bi_functions="${bi_functions} md5 min module_directory new next notice partition realize"
+    bi_functions="${bi_functions} reduce regsubst require return reverse_each round rstrip scanf"
+    bi_functions="${bi_functions} sha1 sha256 shellquote size slice sort split sprintf step"
+    bi_functions="${bi_functions} strftime strip tag tagged template then tree_each type unique"
+    bi_functions="${bi_functions} unwrap upcase values versioncmp warning with yaml_data"
+
+    # functions - stdlib
+    sl_functions="any2array any2bool assert_private base64 basename batch_escape bool2num bool2str"
+    sl_functions="${sl_functions} clamp concat convert_base count deep_merge defined_with_params"
+    sl_functions="${sl_functions} delete delete_at delete_regex delete_undef_values delete_values"
+    sl_functions="${sl_functions} deprecation difference dirname dos2unix enclose_ipv6 ensure_packages"
+    sl_functions="${sl_functions} ensure_resource ensure_resources fact fqdn_rand_string fqdn_rotate"
+    sl_functions="${sl_functions} fqdn_uuid get_module_path getparam getvar glob grap has_interface_with"
+    sl_functions="${sl_functions} has_ip_address has_ip_network intersection is_a is_absolute_path"
+    sl_functions="${sl_functions} is_array is_bool is_domain_name is_email_address is_float"
+    sl_functions="${sl_functions} is_function_available is_hash is_integer is_ip_address is_ipv4_address"
+    sl_functions="${sl_functions} is_ipv6_address is_mac_address is_numeric is_string"
+    sl_functions="${sl_functions} join_keys_to_values load_module_metadata loadjson loadyaml member"
+    sl_functions="${sl_functions} merge num2bool os_version_gte parsehocon parsejson parsepson parseyaml"
+    sl_functions="${sl_functions} pick pick_default powershell_escape prefix pry pw_hash range"
+    sl_functions="${sl_functions} regexescape reject reverse seeded_rand seeded_rand_string shell_escape"
+    sl_functions="${sl_functions} shell_join shell_split shuffle sprintf_hash squeeze"
+    sl_functions="${sl_functions} stdlib::deferrable_epp stdlib::end_with stdlib::ensure stdlib::extname"
+    sl_functions="${sl_functions} stdlib::ip_in_range stdlib::start_with stdlib::str2resource"
+    sl_functions="${sl_functions} stdlib::xml_encode str2bool str2saltedpbkdf2 str2saltedsha512 suffix"
+    sl_functions="${sl_functions} swapcase time to_bytes to_json to_json_pretty to_python to_ruby"
+    sl_functions="${sl_functions} to_toml to_yaml type_of union unix2dos uriescape"
+    sl_functions="${sl_functions} validate_absolute_path validate_array validate_augeas valicate_bool"
+    sl_functions="${sl_functions} validate_cmd validate_domain_name validate_email_address"
+    sl_functions="${sl_functions} validate_hash validate_integer validate_ip_address"
+    sl_functions="${sl_functions} validate_ipv4_address validate_ipv6_address validate_legacy"
+    sl_functions="${sl_functions} validate_numeric validate_re validate_slength validate_string"
+    sl_functions="${sl_functions} validate_x509_rsa_key_pair values_at zip"
+
+    # collected functions
+    functions="${bi_functions} ${sl_functions}"
 
     # types
-    types="Any Array Binary Boolean Callable Catalogentry CatalogEntry Class Collection"
+    types="Any Array Binary Boolean Callable CatalogEntry Class Collection"
     types="${types} Data Default Deferred Enum"
     types="${types} Float Hash Integer NotUndef Numeric Optional Pattern Resource"
-    types="${types} Regexp Runtime Scalar String Struct Timespan Tuple Type Undef Variant"
+    types="${types} Regexp Runtime Scalar SemVer SemVerRange Sensitive String Struct "
+    types="${types} Timespan Tuple Type Undef Variant"
+
+    # lower cased type names
+    lc_types="$(echo ${types} |tr '[:upper:]' '[:lower:]')"
 
     # built-in resources
-    resources="augeas computer cron exec file filebucket group host interface"
-    resources="${resources} k5login macauthorization mailalias maillist mcx"
-    resources="${resources} mount nagios_command nagios_contact"
-    resources="${resources} nagios_contactgroup nagios_host"
-    resources="${resources} nagios_hostdependency nagios_hostescalation"
-    resources="${resources} nagios_hostextinfo nagios_hostgroup"
-    resources="${resources} nagios_service nagios_servicedependency"
-    resources="${resources} nagios_serviceescalation nagios_serviceextinfo"
-    resources="${resources} nagios_servicegroup nagios_timeperiod notify"
-    resources="${resources} package resources router schedule scheduled_task"
-    resources="${resources} selboolean selmodule service ssh_authorized_key"
-    resources="${resources} sshkey stage tidy user vlan yumrepo zfs zone"
-    resources="${resources} zpool"
+    bi_resources="exec file filebucket group notify package resources schedule service stage tidy user"
+
+    # stdlib resources
+    sl_resources="anchor file_line"
+
+    # puppetlabs core resources (moved to their own modules as of puppet6, packaged with
+    # puppet-agent)
+    pa_resources="augeas cron host mount scheduled_task selboolean selmodule ssh_authorized_key sshkey"
+    pa_resources="${pc_resources} yumrepo zfs zpool zone"
+
+    # puppetlabs core resources moved to notionally maintained modules, not package with
+    # puppet-agent
+    pc_resources="k5login mailalias maillist"
+
+    # older resources, used to be part of standard library but no longer, not maintained,
+    # generally don't support puppet7
+    #
+    # nagios_core
+    oc_resources="nagios_command nagios_contact nagios_contactgroup nagios_host nagios_hostdependency"
+    oc_resources="${oc_resources} nagios_hostescalation nagios_hostextinfo nagios_hostgroup nagios_service"
+    oc_resources="${oc_resources} nagios_servicedependency nagios_serviceescalation nagios_serviceextinfo"
+    oc_resources="${oc_resources} nagios_servicegroup nagios_timeperiod"
+    # macdslocal_core
+    oc_resources="${oc_resources} computer macauthorization mcx"
+    # network_device_core (very notmaintained)
+    oc_resources="${oc_resources} interface router vlan"
+
+    # collected resources
+    resources="${bi_resources} ${sl_resources} ${pa_resources} ${pc_resources} ${oc_resources}"
 
     # Special values
     special="true false undef"
@@ -95,7 +146,7 @@ evaluate-commands %sh{
 
     # Add the language's grammar to the static completion list
     printf %s\\n "hook global WinSetOption filetype=puppet %{
-        set-option window static_words $(join "${typedef} ${keywords} ${types} ${functions} ${resources} ${special} ${control}" ' ')'
+        set-option window static_words $(join "${typedef} ${keywords} ${types} ${lc_types} ${functions} ${resources} ${special} ${control}" ' ')'
     }"
 
     # Highlight keywords
@@ -103,7 +154,8 @@ evaluate-commands %sh{
         add-highlighter shared/puppet/code/typedef regex '\b($(join "${typedef}" '|'))\b' 0:module
         add-highlighter shared/puppet/code/keywords regex '\b($(join "${keywords}" '|'))\b' 0:keyword
         add-highlighter shared/puppet/code/control regex '\b($(join "${control}" '|'))\b' 0:operator
-        add-highlighter shared/puppet/code/functions regex '\b($(join "${functions}" '|'))\b\s*\(' 1:builtin
+        add-highlighter shared/puppet/code/functions regex '\b($(join "${functions}" '|'))\b\s*[(|]' 1:builtin
+        add-highlighter shared/puppet/code/functions_chained regex '\.\b($(join "${functions}" '|'))\b' 1:builtin
         add-highlighter shared/puppet/code/types regex '\b($(join "${types}" '|'))\b' 0:type
         add-highlighter shared/puppet/code/resources regex '\b($(join "${resources}" '|'))\b' 0:module
         add-highlighter shared/puppet/code/special regex '\b($(join "${special}" '|'))\b' 0:meta
