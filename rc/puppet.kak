@@ -164,7 +164,7 @@ evaluate-commands %sh{
 
 add-highlighter shared/puppet/code/variabledef regex '(^|\W)(\$[a-z][\w_]*)\s*=\s*([^,]+),?' 1:variable 2:value
 add-highlighter shared/puppet/code/variableref regex '(\$(::)?[a-z][\w_]*(::[a-z][\w_]*)*)' 0:value
-add-highlighter shared/puppet/code/attribute regex '\b([a-z][\w_]*)\s*=>\s*' 0:attribute
+add-highlighter shared/puppet/code/attribute regex '\b([a-z][\w_]*)\s*(\+>|=>)\s*' 0:attribute
 add-highlighter shared/puppet/code/instance regex '(((::)?[a-z][\w_]*(::[a-z][\w_]*)*)\b(?:\s+))\{|$' 1:module
 add-highlighter shared/puppet/code/deftype regex '\b(define)\s+([\S]+)\s+[{(]' 1:type 2:module
 add-highlighter shared/puppet/code/classdef regex '\b(class)\s+([\S]+)\s+[{(]' 1:type 2:module
