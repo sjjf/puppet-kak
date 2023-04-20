@@ -40,6 +40,8 @@ add-highlighter shared/puppet/heredoc_string region -match-capture '@\("?([\h\w_
 add-highlighter shared/puppet/heredoc_string/fill fill string
 add-highlighter shared/puppet/heredoc_string/interpolation regex \$\{(::)?[a-z][\w_]*\} 0:value
 
+# the order of these is relevant - the last one to match wins, so put the
+# least specific first
 add-highlighter shared/puppet/code/operators regex (?<=[\w\s\d'"_])(<<?\||\|>>?|<<|>>|<=|==|>=|=>|=~|!=|!~|->|~>|\bin\b|\band\b|\bor\b|<|>|\?|\+|=|!|-|/|\*|%) 0:operator
 add-highlighter shared/puppet/code/chainingops regex \s+(-|~)>\s+ 0:attribute 1:operator
 add-highlighter shared/puppet/code/variabledef regex '(^|\W)(\$[a-z][\w_]*)\s*=\s*([^,]+),?' 1:variable 2:value
@@ -47,9 +49,10 @@ add-highlighter shared/puppet/code/variableref regex '(\$(::)?[a-z][\w_]*(::[a-z
 add-highlighter shared/puppet/code/attribute regex '\b([a-z][\w_]*)\s*(\+|=)>\s*' 0:attribute 2:operator
 add-highlighter shared/puppet/code/instance regex '\b(((::)?[a-z][\w_]*(::[a-z][\w_]*)*)\b(?:\s+))\{|$' 1:module
 add-highlighter shared/puppet/code/resourceref regex '\b((::)?[A-Z][\w_]*(::[A-Z][\w_]*)*)\b(?:\s*(\[|\{|<<?\|))' 1:module
-add-highlighter shared/puppet/code/deftype regex '\b(define)\s+([\S]+)\s+[{(]' 1:type 2:module
-add-highlighter shared/puppet/code/classdef regex '\b(class)\s+([\S]+)\s+[{(]' 1:type 2:module
 
+# the variable/value/module/etc matches need to be overridden for the actual
+# language keywords, types, library functions, and so on - thus, we put them
+# after most (but not all) of the structural matches
 evaluate-commands %sh{
     # type definitions
     typedef="class define node inherits"
@@ -171,6 +174,9 @@ evaluate-commands %sh{
         add-highlighter shared/puppet/code/special regex '\b($(join "${special}" '|'))\b' 0:meta
     "
 }
+
+# however, the following matches need to override the language feature matches
+add-highlighter shared/puppet/code/deftype regex '\b(define|class)\s+([\S]+)\s+[{(]' 1:type 2:module
 
 # Commands
 # ‾‾‾‾‾‾‾‾
