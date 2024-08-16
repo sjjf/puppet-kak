@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # wrap puppet-lint --fix so that it can be made compatible with the way that
 # kak runs its formatters
@@ -7,8 +7,8 @@ import subprocess
 import sys
 import tempfile
 
-(_, name) = tempfile.mkstemp(prefix='kak-puppet-fix')
-with open(name, 'w') as old:
+(_, name) = tempfile.mkstemp(prefix="kak-puppet-fix")
+with open(name, "w") as old:
     line = sys.stdin.readline()
     while len(line) > 0:
         old.write(line)
@@ -16,10 +16,8 @@ with open(name, 'w') as old:
         line = sys.stdin.readline()
 
     # we need to dump all output somewhere quiet
-    devnull = open("/dev/null", 'w')
-    subprocess.call(["puppet-lint", "--fix", name],
-                    stdout=devnull,
-                    stderr=devnull)
+    devnull = open("/dev/null", "w")
+    subprocess.call(["puppet-lint", "--fix", name], stdout=devnull, stderr=devnull)
 
     # at this point the file may have been rewritten, so we need to reopen it
     with open(name) as new:
