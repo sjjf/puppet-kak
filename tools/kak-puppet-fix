@@ -2,27 +2,49 @@
 #
 # wrap puppet-lint --fix so that it can be made compatible with the way that
 # kak runs its formatters
+#
+# Note: puppet source files are explicitly documented (as of puppet 8, at
+# least) as using UTF-8 encoding - rather than try to enforce that here, we
+# work around it by reading and writing files/streams in binary mode.
+#
+# Note 2: we use the read_bytes/write_bytes methods on a Path object both
+# coming and going here, despite the fact we're modifying the file contents
+# with an external process in between - this is safe, because these methods
+# are explicitly documented as opening, reading/writing, then closing the
+# underlying file.
+#
+# Note 3: later versions of puppet-lint (as of at least 5.1) refuse to modify
+# things that aren't recognised as puppet files - i.e. a '.pp' extension. We
+# work around that in our naming of the temp file.
 
+import fileinput
 import subprocess
 import sys
-import tempfile
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-(_, name) = tempfile.mkstemp(prefix="kak-puppet-fix")
-with open(name, "w") as old:
-    line = sys.stdin.readline()
-    while len(line) > 0:
-        old.write(line)
-        old.flush()
-        line = sys.stdin.readline()
+# wrapping in a TemporaryDirectory context manager to make cleanup simple
+with TemporaryDirectory(ignore_cleanup_errors=True) as td:
+    ppfile = Path(td, "kak-puppet-fix.pp")
 
-    # we need to dump all output somewhere quiet
+    # assuming we won't blow out memory doing this . . .
+    data: bytes = b""
+    for line in fileinput.input(files=None, mode="rb", encoding="UTF-8"):
+        data = data + line
+    ppfile.write_bytes(data)
+
+    # we don't have any useful way to log data, so just dump to /dev/null
     devnull = open("/dev/null", "w")
-    subprocess.call(["puppet-lint", "--fix", name], stdout=devnull, stderr=devnull)
 
-    # at this point the file may have been rewritten, so we need to reopen it
-    with open(name) as new:
-        line = new.read()
-        while len(line) > 0:
-            sys.stdout.write(line)
-            sys.stdout.flush()
-            line = new.read()
+    # allow for adding more comand line options if necessary
+    cmd = [
+        "puppet-lint",
+        "--fix",
+    ]
+    subprocess.call([*cmd, str(ppfile)], stdout=devnull, stderr=devnull)
+
+    # now we just read the contents and dump to stdout (via the underlying
+    # binary buffer object)
+    bdata = ppfile.read_bytes()
+    sys.stdout.buffer.write(bdata)
+    sys.stdout.flush()
